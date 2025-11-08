@@ -1,14 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-const BONDAI_API_URL = process.env.BONDAI_API_URL;
-const BONDAI_API_KEY = process.env.BONDAI_API_KEY;
-
-if (!BONDAI_API_URL || !BONDAI_API_KEY) {
-  console.error('Missing BONDAI_API_URL or BONDAI_API_KEY environment variables.');
-  process.exit(1);
-}
-
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
 
@@ -31,14 +23,5 @@ fs.mkdirSync(DIST, { recursive: true });
   copyRecursive(path.join(ROOT, item), path.join(DIST, item));
 });
 
-const checkoutPath = path.join(DIST, 'checkout', 'index.html');
-let html = fs.readFileSync(checkoutPath, 'utf8');
-
-html = html
-  .replace(/__BONDAI_API_URL__/g, BONDAI_API_URL)
-  .replace(/__BONDAI_API_KEY__/g, BONDAI_API_KEY);
-
-fs.writeFileSync(checkoutPath, html, 'utf8');
-
-console.log('Build complete. Files written to dist/.');
+console.log('Build complete. Files written to dist/. Secrets remain server-side.');
 

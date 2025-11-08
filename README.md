@@ -10,31 +10,35 @@ A clean static demo site that proves the Bondai redemption flow:
 
 ## Quick Start
 
-### Inject API Credentials (optional for local testing)
-Secrets are **not** stored in the repo. When you need real Bondai credentials locally, run:
-
-```bash
-BONDAI_API_URL=https://api.dev.our-projects.info/api/redemptions \
-BONDAI_API_KEY=YOUR_TEST_KEY \
-npm run build
-```
-
-This replaces the placeholders (`__BONDAI_API_URL__`, `__BONDAI_API_KEY__`) inside `checkout/index.html`. Skip the build step to keep placeholders (the redemption status panel will report that the key/URL is missing).
-
-### Serve the Site Locally
+### 1. Install dependencies
 ```bash
 npm install
-npm run dev
 ```
 
-This builds into `dist/` (injecting the Bondai values if environment variables are provided) and serves the output at `http://localhost:3001`. To inject real values locally:
-
+### 2. Build static assets
 ```bash
-BONDAI_API_URL=https://api.dev.our-projects.info/api/redemptions \
-BONDAI_API_KEY=YOUR_TEST_KEY \
 npm run build
+```
+
+This copies the static HTML/CSS/JS into `dist/`.
+
+### 3. Preview the static build
+```bash
 npm run dev
 ```
+
+Serves `dist/` at `http://localhost:3001`. The redemption status panel will warn that the redemption service is unavailable because serverless functions are not running in this mode.
+
+### 4. Preview with Netlify Functions (for live Bondai calls)
+Requires the Netlify CLI (`npm install -g netlify-cli`).
+
+- Create a `.env` file in the project root:
+```bash
+BONDAI_API_URL=https://api.dev.our-projects.info/api/redemptions
+BONDAI_API_KEY=YOUR_TEST_KEY
+```
+- Run `netlify dev` to serve both the static site and the Netlify function at `http://localhost:8888`.
+- Visit `http://localhost:8888/landing.html?mid=M123` to exercise the full flow with real API responses.
 
 ### Test Steps
 
@@ -53,9 +57,9 @@ npm run dev
 
 4. **Go to Checkout**
    - Click "Go to Checkout" button
-   - Navigate to: `http://localhost:3001/checkout/`
+   - Navigate to: `http://localhost:3001/checkout/` (or `http://localhost:8888/checkout/` when using `netlify dev`)
    - Self-Check shows: cookie bondai_mid: M123 and no URL mid
-   - The redemption status panel posts directly to the BONDAI API hub (once placeholders are injected) and displays `{success, errors}`.
+   - The redemption status panel calls `/.netlify/functions/bondai-redemption` and displays `{ ok, data, errors }`.
 
 5. **Verify Purchase Event**
    - dataLayer contains exactly one `{event: 'purchase', value: 79.99, currency: 'USD', transaction_id: 'A123456'}`
@@ -66,7 +70,7 @@ npm run dev
    - Click "Reset MID" button on checkout page
    - Refresh page
    - Cookie should be empty (for GTM later, the Bondai tag would be gated out)
-   - Triggering checkout again sends a new `POST` directly to the BONDAI API hub
+   - Triggering checkout again sends a new request through the Netlify function proxy
 
 ## File Structure
 
@@ -74,11 +78,14 @@ npm run dev
 /
 ├── landing.html              # Landing page with MID capture
 ├── checkout/
-│   └── index.html           # Checkout page (accessible at /checkout/)
+│   └── index.html            # Checkout page (accessible at /checkout/)
+├── netlify/
+│   └── functions/
+│       └── bondai-redemption.js # Serverless proxy keeps Bondai secrets server-side
 ├── assets/
-│   ├── validate.css         # Self-check panel styles
-│   └── validate.js          # Self-check validation logic
-└── README.md               # This file
+│   ├── validate.css          # Self-check panel styles
+│   └── validate.js           # Self-check validation logic
+└── README.md                # This file
 ```
 
 ## Important Notes
@@ -102,7 +109,7 @@ GTM visibility may be blocked by browser extensions (ad blockers, privacy tools)
 - All internal navigation uses absolute paths (`/checkout/`, `/landing.html`)
 - Browsing simulation uses `history.pushState()` to change paths without reload
 - MID parameter is intentionally lost during browsing simulation (realistic behavior)
-- Checkout automatically posts to the BONDAI API hub and shows the raw response
+- Checkout calls the Netlify function proxy which forwards to the Bondai API
 
 ## Self-Check Panel
 
@@ -126,7 +133,7 @@ The validation panel (bottom-right) provides real-time monitoring:
 - Cookie Present: Cookie should contain MID value
 - Purchase Event: dataLayer should contain exactly 1 purchase event
 - GTM Loaded: GTM should be loaded with containers
-- Redemption API: Network tab shows `POST https://api.dev.our-projects.info/api/redemptions` returning the live result (after placeholders are injected)
+- Redemption API: Network tab shows `POST /.netlify/functions/bondai-redemption` (or proxied URL in Netlify logs) returning the live result
 
 ## Troubleshooting
 
@@ -146,4 +153,9 @@ The validation panel (bottom-right) provides real-time monitoring:
 
 ### Navigation Issues
 - All links use absolute paths to avoid relative URL problems
-- Ensure the Express server (`npm run dev`) is running so `/api/redemption` is available
+- Use `netlify dev` when testing the redemption path locally so the function endpoint resolves
+
+### Configure Secrets for Deploy
+- In Netlify → Site settings → Environment variables, set `BONDAI_API_URL` and `BONDAI_API_KEY`
+- The Netlify function reads secrets at runtime, so they are never written to the build output
+- Rotate secrets immediately if they were ever exposed in commits or build artifacts

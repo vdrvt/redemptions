@@ -215,8 +215,7 @@
         });
 
     (function () {
-        var BONDAI_API_URL = '__BONDAI_API_URL__';
-        var BONDAI_API_KEY = '__BONDAI_API_KEY__';
+        var REDEMPTION_ENDPOINT = window.BONDAI_REDEMPTION_ENDPOINT || '/.netlify/functions/bondai-redemption';
 
         function getCookie(name) {
             var nameEQ = name + "=";
@@ -276,26 +275,6 @@
                 return;
             }
 
-            if (!BONDAI_API_URL || BONDAI_API_URL.indexOf('__BONDAI_API_URL__') !== -1) {
-                console.warn('[bondai] BONDAI_API_URL not configured');
-                updateRedemptionStatus({
-                    ok: false,
-                    data: null,
-                    errors: [{ message: 'BONDAI_API_URL missing. Configure during build.' }]
-                });
-                return;
-            }
-
-            if (!BONDAI_API_KEY || BONDAI_API_KEY.indexOf('__BONDAI_API_KEY__') !== -1) {
-                console.warn('[bondai] BONDAI_API_KEY not configured');
-                updateRedemptionStatus({
-                    ok: false,
-                    data: null,
-                    errors: [{ message: 'BONDAI_API_KEY missing. Configure during build.' }]
-                });
-                return;
-            }
-
             var redemptionPayload = {
                 member_partner_key: memberPartnerKey,
                 timestamp: new Date().toISOString(),
@@ -303,20 +282,26 @@
                 offer_savings_amount: 10.00
             };
 
-            fetch(BONDAI_API_URL, {
+            fetch(REDEMPTION_ENDPOINT, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-API-Key': BONDAI_API_KEY
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(redemptionPayload)
             })
             .then(function (response) {
-                return response.json();
+                return response.json().catch(function () {
+                    return {
+                        ok: false,
+                        status: response.status,
+                        data: null,
+                        errors: [{ message: 'Invalid JSON returned by redemption service.' }]
+                    };
+                });
             })
             .then(function (json) {
                 console.log('[bondai] Redemption response', json);
-                updateRedemptionStatus(json || { ok: false, data: null, errors: [{ message: 'Empty response' }] });
+                updateRedemptionStatus(json || { ok: false, data: null, errors: [{ message: 'Empty response from redemption service.' }] });
             })
             .catch(function (error) {
                 console.error('[bondai] Redemption failed', error);
