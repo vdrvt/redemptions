@@ -14,8 +14,8 @@ A clean static demo site that proves the Bondai redemption flow:
 Open `checkout/index.html` and set the constant near the top of the main script:
 
 ```javascript
-var BONDAI_API_URL = 'https://api.dev.our-projects.info/api/redemptions';
-var BONDAI_API_KEY = 'PUT_REAL_KEY_HERE';
+var BONDAI_API_URL = '';
+var BONDAI_API_KEY = '';
 ```
 
 > ⚠️ The key lives client-side in this simplified demo. Replace the placeholder with a test key only.
