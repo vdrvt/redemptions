@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Shop – GTM-only Landing</title>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5MHX3K7Q');</script>
+    <!-- End Google Tag Manager -->
+
+    <style>
+        :root {
+            color-scheme: light only;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+        .card {
+            background: white;
+            max-width: 720px;
+            width: 100%;
+            padding: 48px 40px;
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+        }
+        h1 {
+            margin: 0 0 16px;
+            font-size: 2.25rem;
+            color: #1d4ed8;
+        }
+        p.lead {
+            margin: 0 0 24px;
+            font-size: 1.1rem;
+            color: #4b5563;
+        }
+        .info {
+            background: #f8fafc;
+            padding: 20px 24px;
+            border-radius: 14px;
+            margin-bottom: 28px;
+            border: 1px solid #e2e8f0;
+        }
+        .info h2 {
+            margin: 0 0 12px;
+            font-size: 1.25rem;
+            color: #1f2937;
+        }
+        .info ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #475569;
+            line-height: 1.6;
+        }
+        .cta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .cta a {
+            display: inline-flex;
+            align-items: center;
+            padding: 14px 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 16px 30px rgba(29, 78, 216, 0.3);
+        }
+        .cta a.secondary {
+            background: #e0e7ff;
+            color: #1d4ed8;
+            box-shadow: none;
+        }
+        .cta a:hover {
+            transform: translateY(-1px);
+        }
+        .panel {
+            margin-top: 36px;
+            padding: 20px 24px;
+            border-radius: 12px;
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: 'Courier New', monospace;
+        }
+        .panel strong {
+            color: #38bdf8;
+        }
+        @media (max-width: 640px) {
+            body {
+                padding: 20px;
+            }
+            .card {
+                padding: 32px 24px;
+            }
+            h1 {
+                font-size: 1.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5MHX3K7Q"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <main class="card">
+        <h1>GTM-only Landing Flow</h1>
+        <p class="lead">
+            This variant skips the built-in server-side redemption call. Use it to trigger Bondai via a GTM Custom HTML tag.
+        </p>
+
+        <section class="info">
+            <h2>How to Use</h2>
+            <ul>
+                <li>The MID parameter arrives from the URL query string.</li>
+                <li>No API request is fired automatically by this page.</li>
+                <li>Configure a GTM Custom HTML tag to read the MID and perform the redemption call.</li>
+                <li>Define your own trigger (e.g. page view, button click) in GTM for the API request.</li>
+            </ul>
+        </section>
+
+        <div class="cta">
+            <a href="/landing.html" class="secondary">Back to server-side flow</a>
+            <a href="/index.html">Choose a different flow</a>
+        </div>
+
+        <div class="panel" id="mid-panel">
+            <div><strong>MID</strong>: <span id="mid-value">loading…</span></div>
+            <div><strong>Instructions</strong>: <span>Use dataLayer or GTM variables to access this MID.</span></div>
+        </div>
+    </main>
+
+    <script>
+        (function () {
+            function getQueryParam(name) {
+                var params = new URLSearchParams(window.location.search);
+                return params.get(name);
+            }
+
+            var mid = getQueryParam('mid');
+            var midDisplay = document.getElementById('mid-value');
+
+            if (mid) {
+                midDisplay.textContent = mid;
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push({
+                    event: 'mid_ready',
+                    mid: mid
+                });
+            } else {
+                midDisplay.textContent = 'No MID found (provide ?mid= in the URL)';
+            }
+        })();
+    </script>
+</body>
+</html>
+
+

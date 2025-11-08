@@ -20,7 +20,7 @@ npm install
 npm run build
 ```
 
-This copies the static HTML/CSS/JS into `dist/` and includes a root `index.html` that redirects to `landing.html`.
+This copies the static HTML/CSS/JS into `dist/` and includes the entry selector (`index.html`) plus both landing variants.
 
 ### 3. Preview the static build
 ```bash
@@ -72,12 +72,18 @@ BONDAI_API_KEY=YOUR_TEST_KEY
    - Cookie should be empty (for GTM later, the Bondai tag would be gated out)
    - Triggering checkout again sends a new request through the Netlify function proxy
 
+7. **(Optional) GTM-only Landing**
+   - Navigate to: `http://localhost:3001/landing-gtm.html?mid=M123`
+   - No server-side call is made; MID is pushed to `dataLayer` with the event `mid_ready`
+   - Configure a GTM Custom HTML tag to read the MID and call the API client-side
+
 ## File Structure
 
 ```
 /
-├── index.html               # Redirects / to /landing.html
-├── landing.html             # Landing page with MID capture
+├── index.html               # Entry point with MID selector and flow chooser
+├── landing.html             # Landing page with MID capture (server-side flow)
+├── landing-gtm.html         # Landing page for GTM-only API trigger
 ├── checkout/
 │   └── index.html            # Checkout page (accessible at /checkout/)
 ├── netlify/
@@ -107,7 +113,7 @@ GTM visibility may be blocked by browser extensions (ad blockers, privacy tools)
 - Cookie uses `SameSite=Lax` and `Secure` (only on HTTPS)
 
 ### Navigation
-- All internal navigation uses absolute paths (`/checkout/`, `/landing.html`)
+- All internal navigation uses absolute paths (`/checkout/`, `/landing.html`, `/landing-gtm.html`)
 - Browsing simulation uses `history.pushState()` to change paths without reload
 - MID parameter is intentionally lost during browsing simulation (realistic behavior)
 - Checkout calls the Netlify function proxy which forwards to the Bondai API
