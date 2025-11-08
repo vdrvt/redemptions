@@ -276,12 +276,22 @@
                 return;
             }
 
-            if (!BONDAI_API_KEY || BONDAI_API_KEY === 'PUT_REAL_KEY_HERE') {
+            if (!BONDAI_API_URL || BONDAI_API_URL.indexOf('__BONDAI_API_URL__') !== -1) {
+                console.warn('[bondai] BONDAI_API_URL not configured');
+                updateRedemptionStatus({
+                    ok: false,
+                    data: null,
+                    errors: [{ message: 'BONDAI_API_URL missing. Configure during build.' }]
+                });
+                return;
+            }
+
+            if (!BONDAI_API_KEY || BONDAI_API_KEY.indexOf('__BONDAI_API_KEY__') !== -1) {
                 console.warn('[bondai] BONDAI_API_KEY not configured');
                 updateRedemptionStatus({
                     ok: false,
                     data: null,
-                    errors: [{ message: 'Set BONDAI_API_KEY near the top of checkout/index.html before testing' }]
+                    errors: [{ message: 'BONDAI_API_KEY missing. Configure during build.' }]
                 });
                 return;
             }

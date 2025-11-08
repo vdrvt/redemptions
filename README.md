@@ -10,15 +10,16 @@ A clean static demo site that proves the Bondai redemption flow:
 
 ## Quick Start
 
-### Configure API Key
-Open `checkout/index.html` and set the constant near the top of the main script:
+### Inject API Credentials (optional for local testing)
+Secrets are **not** stored in the repo. When you need real Bondai credentials locally, run:
 
-```javascript
-var BONDAI_API_URL = '';
-var BONDAI_API_KEY = '';
+```bash
+BONDAI_API_URL=https://api.dev.our-projects.info/api/redemptions \
+BONDAI_API_KEY=YOUR_TEST_KEY \
+npm run build
 ```
 
-> ⚠️ The key lives client-side in this simplified demo. Replace the placeholder with a test key only.
+This replaces the placeholders (`__BONDAI_API_URL__`, `__BONDAI_API_KEY__`) inside `checkout/index.html`. Skip the build step to keep placeholders (the redemption status panel will report that the key/URL is missing).
 
 ### Serve the Site Locally
 ```bash
@@ -26,7 +27,7 @@ npm install
 npm run dev
 ```
 
-This starts a simple static server at `http://localhost:3001`. Any static server works (`npx http-server`, VS Code Live Server, Netlify, etc.).
+This starts a simple static server at `http://localhost:3001`. Any static server works (`npx http-server`, VS Code Live Server, Netlify, etc.). Run `npm run build` first if you want the Bondai API values in place.
 
 ### Test Steps
 
@@ -47,7 +48,7 @@ This starts a simple static server at `http://localhost:3001`. Any static server
    - Click "Go to Checkout" button
    - Navigate to: `http://localhost:3001/checkout/`
    - Self-Check shows: cookie bondai_mid: M123 and no URL mid
-   - The redemption status panel posts directly to the BONDAI API hub and displays `{success, errors}`.
+   - The redemption status panel posts directly to the BONDAI API hub (once placeholders are injected) and displays `{success, errors}`.
 
 5. **Verify Purchase Event**
    - dataLayer contains exactly one `{event: 'purchase', value: 79.99, currency: 'USD', transaction_id: 'A123456'}`
@@ -118,7 +119,7 @@ The validation panel (bottom-right) provides real-time monitoring:
 - Cookie Present: Cookie should contain MID value
 - Purchase Event: dataLayer should contain exactly 1 purchase event
 - GTM Loaded: GTM should be loaded with containers
-- Redemption API: Network tab shows `POST https://api.dev.our-projects.info/api/redemptions` returning the live result
+- Redemption API: Network tab shows `POST https://api.dev.our-projects.info/api/redemptions` returning the live result (after placeholders are injected)
 
 ## Troubleshooting
 
