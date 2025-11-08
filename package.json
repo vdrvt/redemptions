@@ -4,9 +4,9 @@
   "description": "Static demo site for testing GTM tags with Bondai redemption gateway",
   "private": true,
   "scripts": {
-    "dev": "http-server -p 3001 --no-dotfiles --cors",
-    "build": "node scripts/inject-env.js",
-    "start": "http-server -p 3001 --no-dotfiles --cors"
+    "dev": "http-server dist -p 3001 --no-dotfiles --cors",
+    "build": "node scripts/build.js",
+    "start": "http-server dist -p 3001 --no-dotfiles --cors"
   },
   "keywords": [
     "gtm",

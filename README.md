@@ -27,7 +27,14 @@ npm install
 npm run dev
 ```
 
-This starts a simple static server at `http://localhost:3001`. Any static server works (`npx http-server`, VS Code Live Server, Netlify, etc.). Run `npm run build` first if you want the Bondai API values in place.
+This builds into `dist/` (injecting the Bondai values if environment variables are provided) and serves the output at `http://localhost:3001`. To inject real values locally:
+
+```bash
+BONDAI_API_URL=https://api.dev.our-projects.info/api/redemptions \
+BONDAI_API_KEY=YOUR_TEST_KEY \
+npm run build
+npm run dev
+```
 
 ### Test Steps
 
