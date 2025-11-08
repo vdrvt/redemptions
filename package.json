@@ -1,0 +1,22 @@
+{
+  "name": "bondai-gtm-demo",
+  "version": "1.0.0",
+  "description": "Static demo site for testing GTM tags with Bondai redemption gateway",
+  "private": true,
+  "scripts": {
+    "dev": "http-server -p 3001 --no-dotfiles --cors",
+    "start": "http-server -p 3001 --no-dotfiles --cors"
+  },
+  "keywords": [
+    "gtm",
+    "google-tag-manager",
+    "demo",
+    "bondai",
+    "redemption"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

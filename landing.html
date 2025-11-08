@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Shop – Landing</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5MHX3K7Q');</script>
+    <!-- End Google Tag Manager -->
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .hero {
+            background: white;
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .mid-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        
+        .mid-captured {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .mid-none {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .button {
+            display: inline-block;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 10px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .steps {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .steps h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .navigation-sim {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .navigation-sim h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .current-path {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 20px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5MHX3K7Q"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
+    <div class="container">
+        <div class="hero">
+            <h1>Partner Shop – Landing</h1>
+            <p>Discover amazing products and exclusive deals</p>
+            
+            <div id="mid-badge" class="mid-badge mid-none">No MID</div>
+            
+            <div class="navigation-sim">
+                <h3>Browse Our Store</h3>
+                <div class="current-path" id="current-path">Current location: /</div>
+                <button id="browse-btn" class="button">Simulate Browsing</button>
+                <a href="/checkout/" id="checkout-btn" class="button" style="display: none;">Go to Checkout</a>
+            </div>
+        </div>
+        
+        <div class="steps">
+            <h3>How It Works</h3>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>Land on our site with your unique MID parameter</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>Browse our products and collections</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>Complete your purchase and earn rewards</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Self-Check Validation Panel -->
+    <script src="/assets/validate.js"></script>
+    
+    <script>
+        // Initialize dataLayer
+        window.dataLayer = window.dataLayer || [];
+        
+        // Cookie utilities
+        function setCookie(name, value, days, options) {
+            var expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            var secure = location.protocol === 'https:' ? '; Secure' : '';
+            document.cookie = name + '=' + value + '; expires=' + expires.toUTCString() + '; path=/; SameSite=Lax' + secure;
+        }
+        
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        // Extract MID from URL
+        function getUrlParam(name) {
+            try {
+                var urlParams = new URLSearchParams(location.search);
+                return urlParams.get(name);
+            } catch (e) {
+                // Fallback to regex for older browsers
+                var match = location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+                return match ? match[1] : null;
+            }
+        }
+        
+        // Initialize page
+        function init() {
+            var urlMID = getUrlParam('mid');
+            
+            if (urlMID) {
+                // Store MID in cookie for 30 days
+                setCookie('bondai_mid', urlMID, 30);
+                
+                // Also mirror to localStorage as backup
+                try {
+                    localStorage.setItem('bondai_mid', urlMID);
+                } catch (e) {
+                    // Ignore localStorage errors
+                }
+                
+                // Update UI
+                var badge = document.getElementById('mid-badge');
+                badge.textContent = 'MID captured: ' + urlMID;
+                badge.className = 'mid-badge mid-captured';
+            }
+        }
+        
+        // Simulate browsing
+        var paths = ['/', '/collections', '/product/123', '/cart'];
+        var currentPathIndex = 0;
+        
+        function simulateBrowsing() {
+            var browseBtn = document.getElementById('browse-btn');
+            var checkoutBtn = document.getElementById('checkout-btn');
+            var currentPath = document.getElementById('current-path');
+            
+            browseBtn.disabled = true;
+            browseBtn.textContent = 'Browsing...';
+            
+            var interval = setInterval(function() {
+                currentPathIndex++;
+                if (currentPathIndex < paths.length) {
+                    var newPath = paths[currentPathIndex];
+                    // Don't preserve MID parameter during browsing simulation
+                    // This simulates real browsing behavior where MID gets lost
+                    history.pushState({}, '', newPath);
+                    currentPath.textContent = 'Current location: ' + newPath;
+                } else {
+                    clearInterval(interval);
+                    browseBtn.textContent = 'Browse Complete';
+                    checkoutBtn.style.display = 'inline-block';
+                }
+            }, 500);
+        }
+        
+        // Event listeners
+        document.getElementById('browse-btn').addEventListener('click', simulateBrowsing);
+        
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>

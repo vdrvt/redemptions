@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Shop – Checkout Complete</title>
+    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5MHX3K7Q');</script>
+    <!-- End Google Tag Manager -->
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .hero {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #27ae60;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+        
+        .order-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .order-details h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #27ae60;
+        }
+        
+        .order-label {
+            color: #666;
+        }
+        
+        .order-value {
+            font-weight: 600;
+        }
+
+        .redemption-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            background: #f0f4f8;
+            text-align: left;
+        }
+
+        .redemption-status h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .redemption-status .status-line {
+            margin: 4px 0;
+        }
+
+        .status-ok {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .status-fail {
+            color: #c62828;
+            font-weight: 600;
+        }
+        
+        .button {
+            display: inline-block;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 10px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .back-link {
+            display: inline-block;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5MHX3K7Q"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    
+    <div class="container">
+        <div class="hero">
+            <div class="success-icon">✓</div>
+            <h1>Order Complete</h1>
+            <p>Thank you for your purchase! Your order has been processed successfully.</p>
+            
+            <div class="order-details">
+                <h3>Order Summary</h3>
+                <div class="order-item">
+                    <span class="order-label">Order ID:</span>
+                    <span class="order-value">A123456</span>
+                </div>
+                <div class="order-item">
+                    <span class="order-label">Currency:</span>
+                    <span class="order-value">USD</span>
+                </div>
+                <div class="order-item">
+                    <span class="order-label">Total:</span>
+                    <span class="order-value">$79.99</span>
+                </div>
+            </div>
+            
+            <a href="/landing.html" class="back-link">← Back to Landing</a>
+            
+            <div class="redemption-status" id="redemption-status">
+                <h4>Bondai Redemption Status</h4>
+                <div class="status-line">Status: <span class="status-fail" id="redemption-ok">pending</span></div>
+                <div class="status-line">Response:</div>
+                <pre class="status-line" id="redemption-response">waiting for response…</pre>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Self-Check Validation Panel -->
+    <script src="/assets/validate.js"></script>
+    
+    <script>
+        // Initialize dataLayer
+        window.dataLayer = window.dataLayer || [];
+        
+        // Push purchase event to dataLayer
+        window.dataLayer.push({
+            event: 'purchase',
+            value: 79.99,
+            currency: 'USD',
+            transaction_id: 'A123456'
+        });
+
+    (function () {
+        var BONDAI_API_URL = 'https://api.dev.our-projects.info/api/redemptions';
+        var BONDAI_API_KEY = window.BONDAI_API_KEY || 'PUT_REAL_KEY_HERE';
+
+        function getCookie(name) {
+            var nameEQ = name + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function getMemberPartnerKey() {
+            var cookieMid = getCookie('bondai_mid');
+            if (cookieMid) {
+                return cookieMid;
+            }
+            try {
+                var stored = localStorage.getItem('bondai_mid');
+                if (stored) {
+                    return stored;
+                }
+            } catch (error) {
+                console.warn('[bondai] Unable to access localStorage', error);
+            }
+            return null;
+        }
+
+        function updateRedemptionStatus(result) {
+            var okEl = document.getElementById('redemption-ok');
+            var responseEl = document.getElementById('redemption-response');
+
+            if (!okEl || !responseEl) {
+                return;
+            }
+
+            var ok = !!(result && result.ok);
+            okEl.textContent = ok ? 'success' : 'failed';
+            okEl.className = ok ? 'status-ok' : 'status-fail';
+
+            try {
+                responseEl.textContent = JSON.stringify(result, null, 2);
+            } catch (err) {
+                responseEl.textContent = '[unable to display response]';
+            }
+        }
+
+        function sendRedemption() {
+            var memberPartnerKey = getMemberPartnerKey();
+            if (!memberPartnerKey) {
+                console.warn('[bondai] No member_partner_key found; skipping redemption call');
+                updateRedemptionStatus({
+                    ok: false,
+                    data: null,
+                    errors: [{ message: 'Missing member_partner_key (cookie/localStorage empty)' }]
+                });
+                return;
+            }
+
+            if (!BONDAI_API_KEY || BONDAI_API_KEY === 'PUT_REAL_KEY_HERE') {
+                console.warn('[bondai] BONDAI_API_KEY not configured');
+                updateRedemptionStatus({
+                    ok: false,
+                    data: null,
+                    errors: [{ message: 'Set BONDAI_API_KEY near the top of checkout/index.html before testing' }]
+                });
+                return;
+            }
+
+            var redemptionPayload = {
+                member_partner_key: memberPartnerKey,
+                timestamp: new Date().toISOString(),
+                offer_amount: 79.99,
+                offer_savings_amount: 10.00
+            };
+
+            fetch(BONDAI_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': BONDAI_API_KEY
+                },
+                body: JSON.stringify(redemptionPayload)
+            })
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (json) {
+                console.log('[bondai] Redemption response', json);
+                updateRedemptionStatus(json || { ok: false, data: null, errors: [{ message: 'Empty response' }] });
+            })
+            .catch(function (error) {
+                console.error('[bondai] Redemption failed', error);
+                updateRedemptionStatus({
+                    ok: false,
+                    data: null,
+                    errors: [{ message: error && error.message ? error.message : 'Network error' }]
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', sendRedemption);
+        } else {
+            sendRedemption();
+        }
+    })();
+    </script>
+</body>
+</html>
