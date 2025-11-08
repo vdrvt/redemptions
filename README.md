@@ -20,7 +20,7 @@ npm install
 npm run build
 ```
 
-This copies the static HTML/CSS/JS into `dist/`.
+This copies the static HTML/CSS/JS into `dist/` and includes a root `index.html` that redirects to `landing.html`.
 
 ### 3. Preview the static build
 ```bash
@@ -76,7 +76,8 @@ BONDAI_API_KEY=YOUR_TEST_KEY
 
 ```
 /
-├── landing.html              # Landing page with MID capture
+├── index.html               # Redirects / to /landing.html
+├── landing.html             # Landing page with MID capture
 ├── checkout/
 │   └── index.html            # Checkout page (accessible at /checkout/)
 ├── netlify/
