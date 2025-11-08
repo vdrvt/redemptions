@@ -20,7 +20,7 @@ npm install
 npm run build
 ```
 
-This copies the static HTML/CSS/JS into `dist/` and includes the entry selector (`index.html`) plus both landing variants.
+This copies the static HTML/CSS/JS into `dist/` and includes the entry selector (`index.html`) plus the landing and checkout variants.
 
 ### 3. Preview the static build
 ```bash
@@ -77,6 +77,11 @@ BONDAI_API_KEY=YOUR_TEST_KEY
    - No server-side call is made; MID is pushed to `dataLayer` with the event `mid_ready`
    - Configure a GTM Custom HTML tag to read the MID and call the API client-side
 
+8. **(Optional) GTM-only Checkout**
+   - Navigate to: `http://localhost:3001/checkout-gtm.html`
+   - Page pushes `{ event: 'bondai_redemption_ready', payload: { ... } }` to `dataLayer`
+   - Use your GTM Custom HTML tag to perform the redemption call and invoke `window.updateBondaiStatus(result)`
+
 ## File Structure
 
 ```
@@ -84,6 +89,7 @@ BONDAI_API_KEY=YOUR_TEST_KEY
 ├── index.html               # Entry point with MID selector and flow chooser
 ├── landing.html             # Landing page with MID capture (server-side flow)
 ├── landing-gtm.html         # Landing page for GTM-only API trigger
+├── checkout-gtm.html        # Checkout page for GTM-only redemption flow
 ├── checkout/
 │   └── index.html            # Checkout page (accessible at /checkout/)
 ├── netlify/
@@ -113,7 +119,7 @@ GTM visibility may be blocked by browser extensions (ad blockers, privacy tools)
 - Cookie uses `SameSite=Lax` and `Secure` (only on HTTPS)
 
 ### Navigation
-- All internal navigation uses absolute paths (`/checkout/`, `/landing.html`, `/landing-gtm.html`)
+- All internal navigation uses absolute paths (`/checkout/`, `/landing.html`, `/landing-gtm.html`, `/checkout-gtm.html`)
 - Browsing simulation uses `history.pushState()` to change paths without reload
 - MID parameter is intentionally lost during browsing simulation (realistic behavior)
 - Checkout calls the Netlify function proxy which forwards to the Bondai API
@@ -166,3 +172,56 @@ The validation panel (bottom-right) provides real-time monitoring:
 - In Netlify → Site settings → Environment variables, set `BONDAI_API_URL` and `BONDAI_API_KEY`
 - The Netlify function reads secrets at runtime, so they are never written to the build output
 - Rotate secrets immediately if they were ever exposed in commits or build artifacts
+
+## GTM Custom HTML Tag Setup (Landing/Checkout GTM variants)
+
+1. **Create Data Layer Variables (optional but recommended)**
+   - `bondai_mid` (Data Layer Variable, Key: `mid`)
+   - `bondai_payload` (Data Layer Variable, Key: `payload`)
+
+2. **Create a Custom Event Trigger**
+   - Trigger type: `Custom Event`
+   - Event name: `bondai_redemption_ready`
+   - This will fire on the GTM-only checkout page when the payload is ready.
+
+3. **Add a Custom HTML Tag**
+   - Tag type: `Custom HTML`
+   - HTML template:
+     ```html
+     <script>
+       (async function() {
+         try {
+           var payload = {{bondai_payload}} || {};
+           if (!payload.member_partner_key) {
+             throw new Error('Missing member_partner_key');
+           }
+
+           var response = await fetch('/.netlify/functions/bondai-redemption', {
+             method: 'POST',
+             headers: {
+               'Content-Type': 'application/json'
+             },
+             body: JSON.stringify(payload)
+           });
+
+           var result = await response.json();
+           window.updateBondaiStatus && window.updateBondaiStatus(result);
+           window.dataLayer = window.dataLayer || [];
+           window.dataLayer.push({ event: 'bondai_redemption_completed', result: result });
+         } catch (error) {
+           var failure = { ok: false, errors: [{ message: error.message }] };
+           window.updateBondaiStatus && window.updateBondaiStatus(failure);
+           window.dataLayer = window.dataLayer || [];
+           window.dataLayer.push({ event: 'bondai_redemption_completed', result: failure });
+         }
+       })();
+     </script>
+     ```
+   - Triggering: use the `bondai_redemption_ready` custom event trigger.
+
+4. **Landing Page Hook (optional)**
+   - On `landing-gtm.html` you can also listen to the `mid_ready` event with another trigger if you need to persist the MID, run analytics, or fire preliminary tags.
+
+5. **Publish**
+   - Preview in GTM to ensure the tag fires on both GTM-only pages.
+   - Verify the on-page status panels update and the `bondai_redemption_completed` event appears in the data layer.

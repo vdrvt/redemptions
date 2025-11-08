@@ -19,7 +19,7 @@ function copyRecursive(src, dest) {
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 
-['index.html', 'landing.html', 'landing-gtm.html', 'checkout', 'assets'].forEach((item) => {
+['index.html', 'landing.html', 'landing-gtm.html', 'checkout-gtm.html', 'checkout', 'assets'].forEach((item) => {
   copyRecursive(path.join(ROOT, item), path.join(DIST, item));
 });
 
