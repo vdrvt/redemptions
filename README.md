@@ -78,7 +78,7 @@ BONDAI_API_KEY=YOUR_TEST_KEY
    - Configure a GTM Custom HTML tag to read the MID and call the API client-side
 
 8. **(Optional) GTM-only Checkout**
-   - Navigate to: `http://localhost:3001/checkout-gtm.html`
+   - From the GTM landing page, click “Proceed to GTM checkout” (URL includes the `mid` automatically)
    - Page pushes `{ event: 'bondai_redemption_ready', payload: { ... } }` to `dataLayer`
    - Use your GTM Custom HTML tag to perform the redemption call and invoke `window.updateBondaiStatus(result)`
 
@@ -175,53 +175,91 @@ The validation panel (bottom-right) provides real-time monitoring:
 
 ## GTM Custom HTML Tag Setup (Landing/Checkout GTM variants)
 
-1. **Create Data Layer Variables (optional but recommended)**
-   - `bondai_mid` (Data Layer Variable, Key: `mid`)
-   - `bondai_payload` (Data Layer Variable, Key: `payload`)
+> These instructions assume zero GTM experience—follow them step by step.
 
-2. **Create a Custom Event Trigger**
-   - Trigger type: `Custom Event`
-   - Event name: `bondai_redemption_ready`
-   - This will fire on the GTM-only checkout page when the payload is ready.
+### Step 0 – Open GTM Preview
+1. Log in to <https://tagmanager.google.com/>.
+2. Pick the container that matches `GTM-5MHX3K7Q`.
+3. Click **Preview** (top-right), enter your site URL (for example `https://YOUR-SITE.netlify.app/landing-gtm.html?mid=M123`), and press **Connect**.  
+   This opens Tag Assistant in a new tab so you can watch events as they happen.
 
-3. **Add a Custom HTML Tag**
-   - Tag type: `Custom HTML`
-   - HTML template:
-     ```html
-     <script>
-       (async function() {
-         try {
-           var payload = {{bondai_payload}} || {};
-           if (!payload.member_partner_key) {
-             throw new Error('Missing member_partner_key');
-           }
+### Step 1 – Capture data from the dataLayer
+We will make two simple variables so GTM can read the MID and payload objects we push.
 
-           var response = await fetch('/.netlify/functions/bondai-redemption', {
-             method: 'POST',
-             headers: {
-               'Content-Type': 'application/json'
-             },
-             body: JSON.stringify(payload)
-           });
+1. In the GTM workspace click **Variables**.
+2. Under *User-Defined Variables* click **New** → **Variable Configuration** → choose **Data Layer Variable**.
+3. Name it `bondai_mid`, set **Data Layer Variable Name** to `mid`, leave everything else default, and save.
+4. Repeat to create another Data Layer Variable named `bondai_payload` with **Data Layer Variable Name** `payload`.
 
-           var result = await response.json();
-           window.updateBondaiStatus && window.updateBondaiStatus(result);
-           window.dataLayer = window.dataLayer || [];
-           window.dataLayer.push({ event: 'bondai_redemption_completed', result: result });
-         } catch (error) {
-           var failure = { ok: false, errors: [{ message: error.message }] };
-           window.updateBondaiStatus && window.updateBondaiStatus(failure);
-           window.dataLayer = window.dataLayer || [];
-           window.dataLayer.push({ event: 'bondai_redemption_completed', result: failure });
+### Step 2 – Listen for the checkout signal
+The GTM-only checkout page emits the custom event `bondai_redemption_ready`. We need a trigger for it.
+
+1. Go to **Triggers** → **New**.
+2. Choose **Trigger Configuration** → **Custom Event**.
+3. Set **Event name** to `bondai_redemption_ready`.  
+4. Leave “This trigger fires on” set to **All Custom Events** and save it as `Bondai – Redemption Ready`.
+
+### Step 3 – Build the Custom HTML tag
+This tag will:
+- read the payload,
+- call the Netlify proxy (`/.netlify/functions/bondai-redemption`),
+- tell the page what happened via `window.updateBondaiStatus(...)`,
+- push a completion event back into the dataLayer.
+
+1. Go to **Tags** → **New**.
+2. Choose **Tag Configuration** → **Custom HTML**.
+3. Paste the code below into the HTML box:
+   ```html
+   <script>
+     (async function() {
+       try {
+         var payload = {{bondai_payload}} || {};
+
+         if (!payload.member_partner_key) {
+           throw new Error('Missing member_partner_key');
          }
-       })();
-     </script>
-     ```
-   - Triggering: use the `bondai_redemption_ready` custom event trigger.
 
-4. **Landing Page Hook (optional)**
-   - On `landing-gtm.html` you can also listen to the `mid_ready` event with another trigger if you need to persist the MID, run analytics, or fire preliminary tags.
+         var response = await fetch('/.netlify/functions/bondai-redemption', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify(payload)
+         });
 
-5. **Publish**
-   - Preview in GTM to ensure the tag fires on both GTM-only pages.
-   - Verify the on-page status panels update and the `bondai_redemption_completed` event appears in the data layer.
+         var result = await response.json();
+
+         if (window.updateBondaiStatus) {
+           window.updateBondaiStatus(result);
+         }
+
+         window.dataLayer = window.dataLayer || [];
+         window.dataLayer.push({ event: 'bondai_redemption_completed', result: result });
+       } catch (error) {
+         var failure = {
+           ok: false,
+           errors: [{ message: error && error.message ? error.message : 'Unknown error' }]
+         };
+
+         if (window.updateBondaiStatus) {
+           window.updateBondaiStatus(failure);
+         }
+
+         window.dataLayer = window.dataLayer || [];
+         window.dataLayer.push({ event: 'bondai_redemption_completed', result: failure });
+       }
+     })();
+   </script>
+   ```
+4. Scroll down to **Triggering**, click **Add Trigger**, and pick `Bondai – Redemption Ready`.
+5. Name the tag `Bondai – Redemption via Netlify Function` and save.
+
+### Step 4 – (Optional) React when the MID first appears
+On `landing-gtm.html` we push `event: 'mid_ready'`. You can repeat Steps 2–3 with that event if you want to run extra tags when the MID is captured (for analytics, debugging, etc.).
+
+### Step 5 – Test it
+1. With GTM preview still open, load `/landing-gtm.html?mid=M123`, then click through to `/checkout-gtm.html`.
+2. In Tag Assistant you should see:
+   - Event `mid_ready` on the landing page.
+   - Events `purchase` and `bondai_redemption_ready` on the checkout page.
+3. Confirm the **Bondai – Redemption via Netlify Function** tag fires on `bondai_redemption_ready`.
+4. Back on the site, the “Bondai Redemption Status” panel should update with success/failure instead of “waiting for GTM”.
+5. Once everything looks correct, click **Submit** in GTM to publish your changes.

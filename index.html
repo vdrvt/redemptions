@@ -100,6 +100,15 @@
       transform: translateY(0);
       box-shadow: none;
     }
+    button.ghost {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      box-shadow: none;
+    }
+    button.ghost:hover {
+      background: rgba(27, 124, 215, 0.08);
+    }
     .error {
       color: var(--error);
       min-height: 1.2em;
@@ -116,7 +125,10 @@
     </p>
     <form id="mid-form" novalidate>
       <label for="mid-input">Member ID (MID)</label>
-      <input id="mid-input" name="mid" type="text" placeholder="e.g. M123456789" autocomplete="off" required>
+      <input id="mid-input" name="mid" type="text" placeholder="e.g. BA1234AB56CD7890" autocomplete="off" required>
+      <div class="buttons" style="margin-bottom: 16px;">
+        <button type="button" class="ghost" id="generate-mid">Generate MID</button>
+      </div>
       <p class="help">The MID will be appended to the destination URL as <code>?mid=</code>.</p>
       <div class="buttons">
         <button type="button" class="primary" data-target="/landing.html">Server-side API call</button>
@@ -131,6 +143,22 @@
       const input = document.getElementById('mid-input');
       const errorEl = document.getElementById('mid-error');
       const buttons = document.querySelectorAll('button[data-target]');
+      const generateBtn = document.getElementById('generate-mid');
+
+      function randomSegment(length) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let segment = '';
+        for (let i = 0; i < length; i++) {
+          segment += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return segment;
+      }
+
+      function generateMid() {
+        const prefixes = ['BA', 'MS'];
+        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+        return prefix + randomSegment(8) + randomSegment(8);
+      }
 
       function navigate(target) {
         const mid = input.value.trim();
@@ -148,6 +176,14 @@
         button.addEventListener('click', () => {
           navigate(button.getAttribute('data-target'));
         });
+      });
+
+      generateBtn.addEventListener('click', () => {
+        const mid = generateMid();
+        input.value = mid;
+        errorEl.textContent = '';
+        input.focus();
+        input.select();
       });
 
       form.addEventListener('submit', (event) => {
