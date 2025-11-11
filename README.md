@@ -20,7 +20,7 @@ npm install
 npm run build
 ```
 
-This copies the static HTML/CSS/JS into `dist/` and includes the entry selector (`index.html`) plus the landing and checkout variants.
+This copies the static HTML/CSS/JS into `dist/` and includes the entry selector (`index.html`) plus the landing/checkout variants (classic, GTM, and BUR).
 
 ### 3. Preview the static build
 ```bash
@@ -82,6 +82,14 @@ BONDAI_API_KEY=YOUR_TEST_KEY
    - Page pushes `{ event: 'bondai_redemption_ready', payload: { ... } }` to `dataLayer`
    - Use your GTM Custom HTML tag to perform the redemption call and invoke `window.updateBondaiStatus(result)`
 
+9. **(Optional) BUR flow**
+   - Generate or supply an MID on `/index.html`, then open `/landing-bur.html?mid=...`
+   - Confirm the badge shows the MID and that cookie/localStorage contain `bondai_mid`
+   - Continue to `/checkout-bur.html?mid=...`; verify `#order-total` is visible
+   - Watch the Network tab for a `POST https://api.dev.our-projects.info/api/redemptions` call
+   - Ensure the response renders in the status panel (`window.updateBondaiStatus`)
+   - Remove `data-bondai-total-selector` from the `<script src="/bur.js" ...>` tag and reload to test the script’s fallback parsing
+
 ## File Structure
 
 ```
@@ -90,6 +98,10 @@ BONDAI_API_KEY=YOUR_TEST_KEY
 ├── landing.html             # Landing page with MID capture (server-side flow)
 ├── landing-gtm.html         # Landing page for GTM-only API trigger
 ├── checkout-gtm.html        # Checkout page for GTM-only redemption flow
+├── landing-bur.html         # Landing page for browser-based BUR flow
+├── checkout-bur.html        # Checkout page using Bondai Universal Reporter
+├── public/
+│   └── bur.js               # Bondai Universal Reporter script (copied to /bur.js in dist)
 ├── checkout/
 │   └── index.html            # Checkout page (accessible at /checkout/)
 ├── netlify/
@@ -172,6 +184,26 @@ The validation panel (bottom-right) provides real-time monitoring:
 - In Netlify → Site settings → Environment variables, set `BONDAI_API_URL` and `BONDAI_API_KEY`
 - The Netlify function reads secrets at runtime, so they are never written to the build output
 - Rotate secrets immediately if they were ever exposed in commits or build artifacts
+
+## BUR flow
+
+The Bondai Universal Reporter (BUR) demo bypasses GTM and calls the Bondai API directly from the browser.
+
+1. **Landing (`landing-bur.html`)**
+   - Accepts `?mid=` and stores it in both `localStorage.bondai_mid` and the `bondai_mid` cookie (30 days).
+   - Shows the MID in a badge and links to `/checkout-bur.html?mid=...`.
+
+2. **Checkout (`checkout-bur.html`)**
+   - Displays a trimmed-down order summary with `#order-total` and hidden `#order-discounts`.
+   - Loads `/bur.js` with `data-bondai-*` attributes to send the redemption immediately (`data-bondai-send="now"`).
+   - Exposes `window.updateBondaiStatus(result)` so BUR can render the API response inside the status panel.
+
+3. **Testing checklist**
+   - Open `/landing-bur.html?mid=BADEMO1234567890AB`; check badge, cookie, and localStorage values.
+   - Continue to `/checkout-bur.html`; confirm `#order-total` shows `$69.99`.
+   - Inspect DevTools → Network for `POST https://api.dev.our-projects.info/api/redemptions` containing the MID and totals.
+   - Confirm the response appears in the status panel with `ok: true`.
+   - Remove `data-bondai-total-selector` from the `<script src="/bur.js"...>` tag and reload; BUR should fall back to its internal detection (expect a console warning if amounts are missing).
 
 ## GTM Custom HTML Tag Setup (Landing/Checkout GTM variants)
 

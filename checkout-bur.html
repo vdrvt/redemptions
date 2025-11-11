@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bondai BUR Checkout</title>
+  <style>
+    :root {
+      color-scheme: light only;
+      --bg: #0f172a;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --accent: #1d4ed8;
+      --muted: #475569;
+      --border: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, rgba(37, 99, 235, 0.25), transparent 45%), var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #0f172a;
+      padding: 36px 16px;
+    }
+    main {
+      width: min(640px, 100%);
+      background: var(--card);
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: 0 30px 60px rgba(15, 23, 42, 0.35);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 2.2rem;
+      color: var(--accent);
+    }
+    p.lead {
+      margin: 0 0 26px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .order-box {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      background: #f8fafc;
+    }
+    .order-box h2 {
+      margin: 0 0 16px;
+      font-size: 1.3rem;
+      color: #1f2937;
+    }
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .order-item:last-child {
+      border-bottom: none;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1.15rem;
+    }
+    .status-panel {
+      margin-top: 30px;
+      padding: 22px 24px;
+      border-radius: 14px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: 'Courier New', monospace;
+    }
+    .status-panel h3 {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+      color: #38bdf8;
+    }
+    .status-line {
+      margin: 6px 0;
+    }
+    .status-line strong {
+      color: #5eead4;
+    }
+    pre {
+      max-height: 220px;
+      overflow: auto;
+      padding: 12px;
+      border-radius: 8px;
+      background: rgba(148, 163, 184, 0.18);
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .links {
+      margin-top: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .links a {
+      padding: 12px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      color: #1f2937;
+      background: #e2e8f0;
+    }
+    .links a.primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Checkout Summary</h1>
+    <p class="lead">This page uses the Bondai Universal Reporter (BUR) to call the redemption API directly from the browser—no GTM required.</p>
+
+    <section class="order-box">
+      <h2>Order Summary</h2>
+      <div class="order-item">
+        <span>Order ID</span>
+        <span>A987654</span>
+      </div>
+      <div class="order-item">
+        <span>Currency</span>
+        <span>USD</span>
+      </div>
+      <div class="order-item">
+        <span>Total</span>
+        <span id="order-total">$69.99</span>
+      </div>
+      <span id="order-discounts" style="display:none">$21</span>
+    </section>
+
+    <section class="status-panel">
+      <h3>Bondai Redemption Status</h3>
+      <div class="status-line">State: <strong id="status-state">waiting…</strong></div>
+      <pre id="status-output">Awaiting response from Bondai API…</pre>
+    </section>
+
+    <div class="links">
+      <a href="/landing-bur.html" class="primary">Back to BUR landing</a>
+      <a href="/index.html">Flow selector</a>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var stateEl = document.getElementById('status-state');
+      var outputEl = document.getElementById('status-output');
+
+      window.updateBondaiStatus = function (result) {
+        var ok = !!(result && result.ok);
+        stateEl.textContent = ok ? 'success' : 'failed';
+
+        try {
+          outputEl.textContent = JSON.stringify(result, null, 2);
+        } catch (error) {
+          outputEl.textContent = '[unable to stringify result]';
+        }
+      };
+    })();
+  </script>
+  <script
+    src="/bur.js"
+    data-bondai-key="PASTE_TEST_KEY"
+    data-bondai-mode="auto"
+    data-bondai-total-selector="#order-total"
+    data-bondai-discount-selector="#order-discounts"
+    data-bondai-mid-query="mid"
+    data-bondai-debug="true"
+    data-bondai-send="now"
+  ></script>
+</body>
+</html>
+
+
