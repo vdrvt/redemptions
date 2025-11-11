@@ -141,6 +141,39 @@
             border: none;
             cursor: pointer;
         }
+
+        .button.secondary {
+            background: white;
+            color: #3498db;
+            border: 2px solid #3498db;
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.15);
+        }
+
+        .button.secondary:hover {
+            background: #f4faff;
+        }
+
+        .button.outline {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: none;
+        }
+
+        .button.outline:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .cta-buttons {
+            margin-top: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .cta-buttons .button {
+            margin: 8px;
+        }
         
         .button:hover {
             transform: translateY(-2px);
@@ -195,6 +228,11 @@
                 <div class="status-line">Status: <span class="status-fail" id="redemption-ok">pending</span></div>
                 <div class="status-line">Response:</div>
                 <pre class="status-line" id="redemption-response">waiting for response…</pre>
+            </div>
+
+            <div class="cta-buttons">
+                <a href="/landing.html" class="button secondary">Back to Landing</a>
+                <a href="/index.html" class="button outline">Choose Different Flow</a>
             </div>
         </div>
     </div>
