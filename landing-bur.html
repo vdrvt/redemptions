@@ -126,7 +126,7 @@
       if (mid) {
         badgeValue.textContent = mid;
         checkoutLink.classList.remove('disabled');
-        checkoutLink.href = '/checkout-bur.html?mid=' + encodeURIComponent(mid);
+        checkoutLink.href = '/checkout-bur.html';
 
         try {
           localStorage.setItem('bondai_mid', mid);

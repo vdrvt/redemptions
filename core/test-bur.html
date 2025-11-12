@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Bondai BUR Test Bench</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="preload" href="../bur.js" as="script">
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#0f172a;color:#0b1220}
+  .wrap{max-width:1100px;margin:0 auto;padding:28px}
+  h1{color:#e2e8f0;margin:0 0 8px}
+  .card{background:#ffffff;border-radius:14px;padding:18px 18px 22px;box-shadow:0 20px 50px rgba(0,0,0,.25);margin:14px 0}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+  label{display:block;font-size:.85rem;color:#334155;margin-bottom:6px}
+  select,input,button{padding:10px 12px;border-radius:10px;border:1px solid #e2e8f0;font-size:14px}
+  button{background:#1d4ed8;color:#fff;border:0;cursor:pointer}
+  button.secondary{background:#e2e8f0;color:#0f172a}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem;white-space:pre-wrap;word-break:break-word;background:#0b1220;color:#e2e8f0;padding:12px;border-radius:10px;min-height:120px}
+  .ok{color:#16a34a;font-weight:600}
+  .warn{color:#b45309;font-weight:600}
+  .pane-title{font-weight:700;color:#0f172a;margin-bottom:8px}
+  .order{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px}
+  .order .rowline{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #e5e7eb}
+  .order .rowline:last-child{border-bottom:0}
+  .pill{display:inline-flex;gap:8px;background:#dbeafe;color:#1d4ed8;padding:6px 10px;border-radius:999px;font-size:.85rem;margin-top:8px}
+  .small{font-size:.85rem;color:#475569}
+  .tag{display:inline-block;background:#eef2ff;color:#3730a3;padding:2px 8px;border-radius:999px;font-size:.75rem;margin-right:8px}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border-bottom:1px solid #e5e7eb;padding:8px;text-align:left;font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bondai BUR Test Bench</h1>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Scenario</label>
+        <select id="scenario"></select>
+      </div>
+      <div>
+        <label>API key</label>
+        <input id="apikey" value="bur_test" placeholder="bur_test"/>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button id="run">Run scenario</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button id="runAll" class="secondary">Run all</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button id="clear" class="secondary">Clear</button>
+      </div>
+    </div>
+    <div class="small">Path note: this page loads BUR from <code>../public/bur.js</code>. Adjust if your structure differs.</div>
+  </div>
+
+  <div class="card grid">
+    <div>
+      <div class="pane-title">Order Preview DOM</div>
+      <div id="dompane" class="order">
+        <div class="rowline"><span>Order ID</span><span id="order-id">A123456</span></div>
+        <div class="rowline"><span>Currency</span><span>USD</span></div>
+        <div class="rowline"><span>Total</span><span id="order-total">$79.99</span></div>
+        <div class="pill">MID: <span id="mid-badge">not set</span></div>
+        <div style="display:none">Discounts: <span id="order-discounts">0</span></div>
+      </div>
+      <p class="small" id="scriptAttrs"></p>
+    </div>
+    <div>
+      <div class="pane-title">Result (<span id="currentScenario">none</span>)</div>
+      <div class="mono" id="result">Waiting... Start a scenario.</div>
+      <div class="pane-title" style="margin-top:12px">Payload sent</div>
+      <div class="mono" id="payload">None yet</div>
+      <div class="pane-title" style="margin-top:12px">Detected values</div>
+      <div class="mono" id="detected">None yet</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="pane-title">Run all results</div>
+    <table class="table" id="table">
+      <thead><tr><th>Scenario</th><th>expected</th><th>actual ok</th><th>amount</th><th>discount</th><th>note</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="small"><a href="#" id="download">Download JSON report</a></p>
+  </div>
+</div>
+
+<script type="module">
+  import { SCENARIOS } from "./js/test-scenarios.js";
+
+  const $ = (s) => document.querySelector(s);
+  const resultEl = $("#result");
+  const payloadEl = $("#payload");
+  const detectedEl = $("#detected");
+  const tbody = document.querySelector("#table tbody");
+  const attrsEl = $("#scriptAttrs");
+  const apikeyEl = $("#apikey");
+  const scenarioLabelEl = $("#currentScenario");
+  const dompane = document.getElementById("dompane");
+  const baseDomHTML = dompane.innerHTML;
+
+  function refreshDomRefs() {
+    state.midBadge = document.getElementById("mid-badge");
+    state.totalEl = document.getElementById("order-total");
+    state.discEl = document.getElementById("order-discounts");
+  }
+
+  const state = {
+    midBadge: document.getElementById("mid-badge"),
+    totalEl: document.getElementById("order-total"),
+    discEl: document.getElementById("order-discounts"),
+    overrideUrl: null,
+    restoreFetch: null,
+  };
+
+  window.dataLayer = window.dataLayer || [];
+
+  const env = {
+    resetAll() {
+      resultEl.textContent = "Waiting…";
+      resultEl.className = "mono";
+      payloadEl.textContent = "None yet";
+      detectedEl.textContent = "None yet";
+      attrsEl.textContent = "";
+      scenarioLabelEl.textContent = "none";
+
+      window.dataLayer.length = 0;
+
+      document.cookie.split(";").forEach((c) => {
+        const k = c.split("=")[0].trim();
+        if (k) {
+          document.cookie = k + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        }
+      });
+
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (e) {
+        console.warn("Storage clear failed", e);
+      }
+
+      dompane.innerHTML = baseDomHTML;
+      refreshDomRefs();
+      state.midBadge.textContent = "not set";
+      state.totalEl.textContent = "$79.99";
+      state.discEl.textContent = "0";
+
+      history.replaceState(null, "", location.pathname);
+
+      apikeyEl.value = "bur_test";
+
+      env.setApiUrlOverride(null);
+
+      document.querySelectorAll('script[data-bondai-tag="1"]').forEach((s) => s.remove());
+    },
+    setURLQuery(obj) {
+      const qs = new URLSearchParams(obj || {});
+      const url = qs.toString();
+      history.replaceState(null, "", url ? "?" + url : location.pathname);
+      if (obj && obj.mid) {
+        state.midBadge.textContent = obj.mid;
+      }
+    },
+    setCookie(name, val, days) {
+      const e = new Date();
+      e.setTime(e.getTime() + days * 864e5);
+      document.cookie = name + "=" + encodeURIComponent(val) + "; expires=" + e.toUTCString() + "; path=/; SameSite=Lax";
+      if (name === "bondai_mid") {
+        state.midBadge.textContent = val;
+      }
+    },
+    setStorage(key, val) {
+      try {
+        localStorage.setItem(key, val);
+      } catch (e) {
+        console.warn("localStorage unavailable", e);
+      }
+      if (key === "bondai_mid") {
+        state.midBadge.textContent = val;
+      }
+    },
+    setDOMTotals(totalText, discText) {
+      if (totalText != null) {
+        state.totalEl.textContent = totalText || "";
+      }
+      if (discText != null) {
+        state.discEl.textContent = discText || "";
+      }
+    },
+    ensureDOMIds() {
+      state.totalEl.id = "order-total";
+      state.discEl.id = "order-discounts";
+    },
+    removeDOMIds() {
+      state.totalEl.removeAttribute("id");
+      state.discEl.removeAttribute("id");
+    },
+    injectHeuristicTotals({ total, discount }) {
+      const wrapper = document.createElement("div");
+      wrapper.dataset.heuristic = "true";
+      wrapper.innerHTML = `
+        <div class="rowline"><span>Grand Total</span><span>${total}</span></div>
+        <div class="rowline"><span>Promotion Savings</span><span>${discount}</span></div>
+      `;
+      dompane.appendChild(wrapper);
+    },
+    dataLayerPush(obj) {
+      window.dataLayer.push(obj);
+      if (obj.member_partner_key) {
+        state.midBadge.textContent = obj.member_partner_key;
+      }
+    },
+    setApiUrlOverride(url) {
+      state.overrideUrl = url || null;
+      if (!state.overrideUrl && typeof state.restoreFetch === "function") {
+        state.restoreFetch();
+      }
+    },
+    setKey(key) {
+      apikeyEl.value = key || "bur_test";
+    }
+  };
+
+  window.updateBondaiStatus = function (result) {
+    resultEl.textContent = JSON.stringify(result, null, 2);
+    resultEl.className = "mono " + (result && result.ok ? "ok" : "warn");
+  };
+
+  function restoreFetchLater() {
+    if (typeof state.restoreFetch === "function") {
+      state.restoreFetch();
+    }
+    state.overrideUrl = null;
+  }
+
+  function updateDetected() {
+    try {
+      if (window.bondai && typeof window.bondai.debug === "function") {
+        const dbg = window.bondai.debug();
+        detectedEl.textContent = JSON.stringify(dbg, null, 2);
+        payloadEl.textContent = JSON.stringify(dbg.payload || {}, null, 2);
+        if (dbg.mid) {
+          state.midBadge.textContent = dbg.mid;
+        }
+      }
+    } catch (e) {
+      console.warn("Unable to read bondai debug", e);
+    }
+  }
+
+  function applyFetchOverride() {
+    if (!state.overrideUrl || state.restoreFetch) {
+      return;
+    }
+    const original = window.fetch ? window.fetch.bind(window) : null;
+    window.fetch = function (input, init) {
+      const target = state.overrideUrl || input;
+      return original ? original(target, init) : Promise.reject(new Error("fetch not available"));
+    };
+    state.restoreFetch = () => {
+      if (original) {
+        window.fetch = original;
+      }
+      state.restoreFetch = null;
+    };
+  }
+
+  function injectBur(attrs = {}) {
+    applyFetchOverride();
+
+    const script = document.createElement("script");
+    script.src = "../bur.js";
+    script.setAttribute("data-bondai-tag", "1");
+    script.setAttribute("data-bondai-key", apikeyEl.value || "bur_test");
+    script.setAttribute("data-bondai-mode", "auto");
+    script.setAttribute("data-bondai-debug", "true");
+    script.setAttribute("data-bondai-send", "now");
+    Object.keys(attrs || {}).forEach((key) => {
+      script.setAttribute(key, attrs[key]);
+    });
+    document.body.appendChild(script);
+
+    const list = [];
+    Array.from(script.attributes).forEach((attr) => {
+      if (attr.name.startsWith("data-bondai-")) {
+        list.push(`${attr.name}="${attr.value}"`);
+      }
+    });
+    attrsEl.textContent = '<script src="../bur.js" ' + list.join(" ") + '></scr' + 'ipt>';
+
+    setTimeout(updateDetected, 400);
+    setTimeout(updateDetected, 900);
+    setTimeout(restoreFetchLater, 3000);
+  }
+
+  const sel = document.getElementById("scenario");
+  SCENARIOS.forEach((sc) => {
+    const opt = document.createElement("option");
+    opt.value = sc.id;
+    opt.textContent = sc.label;
+    sel.appendChild(opt);
+  });
+
+  function safeJSON(text) {
+    if (typeof text !== "string") return text;
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      return text;
+    }
+  }
+
+  function formatExpect(expect) {
+    if (!expect) return "";
+    const parts = [];
+    if ("expectOk" in expect) parts.push(`ok=${expect.expectOk}`);
+    if ("expectAmountMin" in expect) parts.push(`amount≥${expect.expectAmountMin}`);
+    if ("expectAmountMax" in expect) parts.push(`amount≤${expect.expectAmountMax}`);
+    if ("expectDiscountMin" in expect) parts.push(`discount≥${expect.expectDiscountMin}`);
+    if ("expectDiscountMax" in expect) parts.push(`discount≤${expect.expectDiscountMax}`);
+    return parts.join(", ");
+  }
+
+  function evaluateExpect(expect, snapshot) {
+    if (!expect) return { summary: "", issues: [] };
+    const summary = formatExpect(expect);
+    const issues = [];
+    const okActual = snapshot.result && typeof snapshot.result === "object" ? !!snapshot.result.ok : null;
+    const amountActual = snapshot.payload && typeof snapshot.payload.offer_amount === "number" ? snapshot.payload.offer_amount : null;
+    const discountActual = snapshot.payload && typeof snapshot.payload.offer_savings_amount === "number" ? snapshot.payload.offer_savings_amount : null;
+
+    if ("expectOk" in expect) {
+      if (okActual === null) {
+        issues.push("missing ok");
+      } else if (okActual !== expect.expectOk) {
+        issues.push(`expected ok=${expect.expectOk}`);
+      }
+    }
+
+    if ("expectAmountMin" in expect && amountActual != null && amountActual < expect.expectAmountMin - 1e-6) {
+      issues.push(`amount ${amountActual} < ${expect.expectAmountMin}`);
+    }
+    if ("expectAmountMax" in expect && amountActual != null && amountActual > expect.expectAmountMax + 1e-6) {
+      issues.push(`amount ${amountActual} > ${expect.expectAmountMax}`);
+    }
+
+    if ("expectDiscountMin" in expect && discountActual != null && discountActual < expect.expectDiscountMin - 1e-6) {
+      issues.push(`discount ${discountActual} < ${expect.expectDiscountMin}`);
+    }
+    if ("expectDiscountMax" in expect && discountActual != null && discountActual > expect.expectDiscountMax + 1e-6) {
+      issues.push(`discount ${discountActual} > ${expect.expectDiscountMax}`);
+    }
+
+    return { summary, issues };
+  }
+
+  function addRow(snapshot) {
+    const tr = document.createElement("tr");
+    const ok = snapshot.result && typeof snapshot.result === "object" ? snapshot.result.ok : null;
+    const amount = snapshot.payload && snapshot.payload.offer_amount;
+    const discount = snapshot.payload && snapshot.payload.offer_savings_amount;
+    const { summary, issues } = evaluateExpect(snapshot.expect, snapshot);
+    const notes = [];
+    if (typeof snapshot.result === "string") {
+      notes.push(snapshot.result);
+    }
+    if (issues.length) {
+      notes.push(issues.join("; "));
+    }
+    tr.innerHTML = `<td><span class="tag">${snapshot.id}</span> ${snapshot.label}</td>
+                    <td>${summary}</td>
+                    <td>${ok === null ? "" : ok ? "true" : "false"}</td>
+                    <td>${amount ?? ""}</td>
+                    <td>${discount ?? ""}</td>
+                    <td>${notes.join("; ")}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  async function runOne(id) {
+    const sc = SCENARIOS.find((s) => s.id === id);
+    if (!sc) return null;
+
+    scenarioLabelEl.textContent = `${sc.id} – ${sc.label}`;
+    await sc.prime(env);
+    injectBur(sc.attrs);
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        updateDetected();
+        const snapshot = {
+          id: sc.id,
+          label: sc.label,
+          result: safeJSON(resultEl.textContent),
+          payload: safeJSON(payloadEl.textContent),
+          expect: sc.expect || null
+        };
+        resolve(snapshot);
+      }, 1700);
+    });
+  }
+
+  document.getElementById("run").addEventListener("click", async () => {
+    tbody.innerHTML = "";
+    const snap = await runOne(sel.value);
+    if (snap) {
+      addRow(snap);
+    }
+  });
+
+  document.getElementById("runAll").addEventListener("click", async () => {
+    tbody.innerHTML = "";
+    const results = [];
+    for (const sc of SCENARIOS) {
+      const snap = await runOne(sc.id);
+      if (snap) {
+        addRow(snap);
+        results.push(snap);
+      }
+    }
+    const blob = new Blob([JSON.stringify(results, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.getElementById("download");
+    link.href = url;
+    link.download = "bur-test-results.json";
+  });
+
+  document.getElementById("clear").addEventListener("click", () => {
+    tbody.innerHTML = "";
+    env.resetAll();
+  });
+
+  sel.value = "mid_url";
+</script>
+</body>
+</html>
+
+
